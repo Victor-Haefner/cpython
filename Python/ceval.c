@@ -4357,7 +4357,8 @@ call_function(PyObject ***pp_stack, int oparg
             PyCFunction meth = PyCFunction_GET_FUNCTION(func);
             PyObject *self = PyCFunction_GET_SELF(func);
             if (flags & METH_NOARGS && na == 0) {
-                C_TRACE(x, (*meth)(self,NULL));
+		PyNoArgsFunction mathNA = (PyNoArgsFunction)meth;
+                C_TRACE(x, (*mathNA)(self));
             }
             else if (flags & METH_O && na == 1) {
                 PyObject *arg = EXT_POP(*pp_stack);
