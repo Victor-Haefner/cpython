@@ -88,8 +88,7 @@
 //#include "cStringIO.c"           
 //#include "flmodule.c"        
 //#include "getnameinfo.c"       
-//#include "_json.c"   
-//#include "_randommodule.c"  
+//#include "_json.c"    
 //#include "socketmodule.c"  
 //#include "termios.c"          
 //#include "xxsubtype.c"
@@ -118,10 +117,12 @@
 #include "_math.h"     
 #include "_math.c"       
 #include "binascii.c" 
+#include "_randommodule.c" 
 
 void import_modules() {
     initmath();
     initbinascii();
+    init_random();
 
 	/*initarray();
 	init_bisect();
@@ -141,7 +142,6 @@ void import_modules() {
 	init_lsprof();
 	initmath();
 	init_md5();
-	init_random();
 	initselect();
 	initsignal();
 	initspwd();

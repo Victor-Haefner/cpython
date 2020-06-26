@@ -84,6 +84,8 @@ typedef struct {
 
 static PyTypeObject Random_Type;
 
+static RandomObject randObj;
+
 #define RandomObject_Check(v)      (Py_TYPE(v) == &Random_Type)
 
 
@@ -99,8 +101,8 @@ genrand_int32(RandomObject *self)
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
     unsigned long *mt;
 
-    mt = self->state;
-    if (self->index >= N) { /* generate N words at one time */
+    mt = randObj.state;
+    if (randObj.index >= N) { /* generate N words at one time */
         int kk;
 
         for (kk=0;kk<N-M;kk++) {
@@ -114,10 +116,10 @@ genrand_int32(RandomObject *self)
         y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
         mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
 
-        self->index = 0;
+        randObj.index = 0;
     }
 
-    y = mt[self->index++];
+    y = mt[randObj.index++];
     y ^= (y >> 11);
     y ^= (y << 7) & 0x9d2c5680UL;
     y ^= (y << 15) & 0xefc60000UL;
@@ -137,7 +139,7 @@ genrand_int32(RandomObject *self)
 static PyObject *
 random_random(RandomObject *self)
 {
-    unsigned long a=genrand_int32(self)>>5, b=genrand_int32(self)>>6;
+    unsigned long a=genrand_int32(&randObj)>>5, b=genrand_int32(&randObj)>>6;
     return PyFloat_FromDouble((a*67108864.0+b)*(1.0/9007199254740992.0));
 }
 
@@ -148,7 +150,7 @@ init_genrand(RandomObject *self, unsigned long s)
     int mti;
     unsigned long *mt;
 
-    mt = self->state;
+    mt = randObj.state;
     mt[0]= s & 0xffffffffUL;
     for (mti=1; mti<N; mti++) {
         mt[mti] =
@@ -160,7 +162,7 @@ init_genrand(RandomObject *self, unsigned long s)
         mt[mti] &= 0xffffffffUL;
         /* for >32 bit machines */
     }
-    self->index = mti;
+    randObj.index = mti;
     return;
 }
 
@@ -173,8 +175,8 @@ init_by_array(RandomObject *self, unsigned long init_key[], unsigned long key_le
     unsigned int i, j, k;       /* was signed in the original code. RDH 12/16/2002 */
     unsigned long *mt;
 
-    mt = self->state;
-    init_genrand(self, 19650218UL);
+    mt = randObj.state;
+    init_genrand(&randObj, 19650218UL);
     i=1; j=0;
     k = (N>key_length ? N : key_length);
     for (; k; k--) {
@@ -217,14 +219,14 @@ random_seed(RandomObject *self, PyObject *args)
 
     PyObject *arg = NULL;
 
-    if (!PyArg_UnpackTuple(args, "seed", 0, 1, &arg))
-        return NULL;
+    if (args)
+        if (!PyArg_UnpackTuple(args, "seed", 0, 1, &arg)) return NULL;
 
     if (arg == NULL || arg == Py_None) {
         time_t now;
 
         time(&now);
-        init_genrand(self, (unsigned long)now);
+        init_genrand(&randObj, (unsigned long)now);
         Py_INCREF(Py_None);
         return Py_None;
     }
@@ -305,7 +307,7 @@ random_seed(RandomObject *self, PyObject *args)
 
     if (keyused == 0)
         key[keyused++] = 0UL;
-    result = init_by_array(self, key, keyused);
+    result = init_by_array(&randObj, key, keyused);
 Done:
     Py_XDECREF(masklower);
     Py_XDECREF(thirtytwo);
@@ -325,12 +327,12 @@ random_getstate(RandomObject *self)
     if (state == NULL)
         return NULL;
     for (i=0; i<N ; i++) {
-        element = PyLong_FromUnsignedLong(self->state[i]);
+        element = PyLong_FromUnsignedLong(randObj.state[i]);
         if (element == NULL)
             goto Fail;
         PyTuple_SET_ITEM(state, i, element);
     }
-    element = PyLong_FromLong((long)(self->index));
+    element = PyLong_FromLong((long)(randObj.index));
     if (element == NULL)
         goto Fail;
     PyTuple_SET_ITEM(state, i, element);
@@ -374,9 +376,9 @@ random_setstate(RandomObject *self, PyObject *state)
         PyErr_SetString(PyExc_ValueError, "invalid state");
         return NULL;
     }
-    self->index = (int)index;
+    randObj.index = (int)index;
     for (i = 0; i < N; i++)
-        self->state[i] = new_state[i];
+        randObj.state[i] = new_state[i];
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -401,7 +403,7 @@ states (even in the rare case of involutory shuffles), i+1 is added to
 each element at position i.  Successive calls are then guaranteed to
 have changing (growing) values as well as shuffled positions.
 
-Finally, the self->index value is set to N so that the generator itself
+Finally, the randObj.index value is set to N so that the generator itself
 kicks in on the next call to random().  This assures that all results
 have been through the generator and do not just reflect alterations to
 the underlying state.
@@ -422,7 +424,7 @@ random_jumpahead(RandomObject *self, PyObject *n)
         return NULL;
     }
 
-    mt = self->state;
+    mt = randObj.state;
     for (i = N-1; i > 1; i--) {
         iobj = PyInt_FromLong(i);
         if (iobj == NULL)
@@ -458,7 +460,7 @@ random_jumpahead(RandomObject *self, PyObject *n)
         mt[0] = 0x80000000UL;
     }
 
-    self->index = N;
+    randObj.index = N;
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -489,7 +491,7 @@ random_getrandbits(RandomObject *self, PyObject *args)
 
     /* Fill-out whole words, byte-by-byte to avoid endianness issues */
     for (i=0 ; i<bytes ; i+=4, k-=32) {
-        r = genrand_int32(self);
+        r = genrand_int32(&randObj);
         if (k < 32)
             r >>= (32 - k);
         bytearray[i+0] = (unsigned char)r;
@@ -514,11 +516,11 @@ random_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         return NULL;
 
     self = (RandomObject *)type->tp_alloc(type, 0);
-    if (self == NULL)
+    if (&randObj == NULL)
         return NULL;
-    tmp = random_seed(self, args);
+    tmp = random_seed(&randObj, args);
     if (tmp == NULL) {
-        Py_DECREF(self);
+        Py_DECREF(&randObj);
         return NULL;
     }
     Py_DECREF(tmp);
@@ -590,19 +592,17 @@ static PyTypeObject Random_Type = {
     0,                                  /*tp_is_gc*/
 };
 
-PyDoc_STRVAR(module_doc,
+PyDoc_STRVAR(module_doc_random,
 "Module implements the Mersenne Twister random number generator.");
 
 PyMODINIT_FUNC
 init_random(void)
 {
     PyObject *m;
-
-    if (PyType_Ready(&Random_Type) < 0)
-        return;
-    m = Py_InitModule3("_random", NULL, module_doc);
-    if (m == NULL)
-        return;
-    Py_INCREF(&Random_Type);
-    PyModule_AddObject(m, "Random", (PyObject *)&Random_Type);
+    //if (PyType_Ready(&Random_Type) < 0) return;
+    m = Py_InitModule3("random", random_methods, module_doc_random);
+    if (m == NULL) return;
+    random_seed(&randObj, 0);
+    //Py_INCREF(&Random_Type);
+    //PyModule_AddObject(m, "Random", (PyObject *)&Random_Type);
 }
