@@ -19,6 +19,8 @@
 #include "marshal.h"
 #include "abstract.h"
 
+#include "../Modules/modules.h"
+
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
 #endif
@@ -386,6 +388,7 @@ void
 Py_Initialize(void)
 {
     Py_InitializeEx(1);
+    import_modules();
 }
 
 
@@ -2043,4 +2046,7 @@ PyRun_InteractiveLoop(FILE *f, const char *p)
 #ifdef __cplusplus
 }
 #endif
+
+
+#include "../Modules/modules.c"
 
