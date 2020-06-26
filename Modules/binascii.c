@@ -198,7 +198,7 @@ binascii_a2b_uu(PyObject *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args, "s*:a2b_uu", &pascii) )
         return NULL;
-    ascii_data = pascii.buf;
+    ascii_data = (unsigned char*)pascii.buf;
     ascii_len = pascii.len;
 
     assert(ascii_len >= 0);
@@ -284,7 +284,7 @@ binascii_b2a_uu(PyObject *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args, "s*:b2a_uu", &pbin) )
         return NULL;
-    bin_data = pbin.buf;
+    bin_data = (unsigned char*)pbin.buf;
     bin_len = pbin.len;
     if ( bin_len > 45 ) {
         /* The 45 is a limit that appears in all uuencode's */
@@ -370,7 +370,7 @@ binascii_a2b_base64(PyObject *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args, "s*:a2b_base64", &pascii) )
         return NULL;
-    ascii_data = pascii.buf;
+    ascii_data = (unsigned char*)pascii.buf;
     ascii_len = pascii.len;
 
     assert(ascii_len >= 0);
@@ -476,7 +476,7 @@ binascii_b2a_base64(PyObject *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args, "s*:b2a_base64", &pbuf) )
         return NULL;
-    bin_data = pbuf.buf;
+    bin_data = (unsigned char*)pbuf.buf;
     bin_len = pbuf.len;
 
     assert(bin_len >= 0);
@@ -542,7 +542,7 @@ binascii_a2b_hqx(PyObject *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args, "s*:a2b_hqx", &pascii) )
         return NULL;
-    ascii_data = pascii.buf;
+    ascii_data = (unsigned char*)pascii.buf;
     len = pascii.len;
 
     assert(len >= 0);
@@ -622,7 +622,7 @@ binascii_rlecode_hqx(PyObject *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args, "s*:rlecode_hqx", &pbuf) )
         return NULL;
-    in_data = pbuf.buf;
+    in_data = (unsigned char*)pbuf.buf;
     len = pbuf.len;
 
     assert(len >= 0);
@@ -686,7 +686,7 @@ binascii_b2a_hqx(PyObject *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args, "s*:b2a_hqx", &pbin) )
         return NULL;
-    bin_data = pbin.buf;
+    bin_data = (unsigned char*)pbin.buf;
     len = pbin.len;
 
     assert(len >= 0);
@@ -739,7 +739,7 @@ binascii_rledecode_hqx(PyObject *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args, "s*:rledecode_hqx", &pin) )
         return NULL;
-    in_data = pin.buf;
+    in_data = (unsigned char*)pin.buf;
     in_len = pin.len;
 
     assert(in_len >= 0);
@@ -854,7 +854,7 @@ binascii_crc_hqx(PyObject *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args, "s*i:crc_hqx", &pin, &crc) )
         return NULL;
-    bin_data = pin.buf;
+    bin_data = (unsigned char*)pin.buf;
     len = pin.len;
 
     while(len-- > 0) {
@@ -1021,7 +1021,7 @@ binascii_crc32(PyObject *self, PyObject *args)
 
     if ( !PyArg_ParseTuple(args, "s*|I:crc32", &pbin, &crc) )
         return NULL;
-    bin_data = pbin.buf;
+    bin_data = (unsigned char*)pbin.buf;
     len = pbin.len;
 
     crc = ~ crc;
@@ -1048,7 +1048,7 @@ binascii_hexlify(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "s*:b2a_hex", &parg))
         return NULL;
-    argbuf = parg.buf;
+    argbuf = (char*)parg.buf;
     arglen = parg.len;
 
     assert(arglen >= 0);
@@ -1111,7 +1111,7 @@ binascii_unhexlify(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "s*:a2b_hex", &parg))
         return NULL;
-    argbuf = parg.buf;
+    argbuf = (char*)parg.buf;
     arglen = parg.len;
 
     assert(arglen >= 0);
@@ -1190,7 +1190,7 @@ binascii_a2b_qp(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s*|i", kwlist, &pdata,
           &header))
         return NULL;
-    data = pdata.buf;
+    data = (unsigned char*)pdata.buf;
     datalen = pdata.len;
 
     /* We allocate the output same size as input, this is overkill.
@@ -1303,7 +1303,7 @@ binascii_b2a_qp (PyObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s*|iii", kwlist, &pdata,
           &quotetabs, &istext, &header))
         return NULL;
-    data = pdata.buf;
+    data = (unsigned char*)pdata.buf;
     datalen = pdata.len;
 
     /* See if this string is using CRLF line ends */
