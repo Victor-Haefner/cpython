@@ -1740,7 +1740,7 @@ static PyTypeObject defdict_type = {
 
 /* module level code ********************************************************/
 
-PyDoc_STRVAR(module_doc,
+PyDoc_STRVAR(collections_module_doc,
 "High performance data structures.\n\
 - deque:        ordered collection accessible from endpoints only\n\
 - defaultdict:  dict subclass with a default value factory\n\
@@ -1751,7 +1751,7 @@ init_collections(void)
 {
     PyObject *m;
 
-    m = Py_InitModule3("_collections", NULL, module_doc);
+    m = Py_InitModule3("_collections", NULL, collections_module_doc);
     if (m == NULL)
         return;
 

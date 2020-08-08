@@ -45,8 +45,7 @@
 //#include "posixmodule.c"    
 //#include "sgimodule.c"     
 //#include "_struct.c"          
-//#include "tkappinit.c"   
-//#include "_collectionsmodule.c"  
+//#include "tkappinit.c"    
 //#include "dlmodule.c"        
 //#include "gcmodule.c"          
 //#include "_hotshot.c"  
@@ -118,17 +117,18 @@
 #include "_math.c"       
 #include "binascii.c" 
 #include "_randommodule.c" 
+#include "_collectionsmodule.c" 
 
 void import_modules() {
     initmath();
     initbinascii();
     init_random();
+    init_collections();
 
 	/*initarray();
 	init_bisect();
 	initbz2();
 	initcmath();
-	init_collections();
 	init_csv();
 	initdatetime();
 	initerrno();
